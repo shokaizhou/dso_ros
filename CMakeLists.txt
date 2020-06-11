@@ -52,4 +52,4 @@ include_directories(
 
 rosbuild_add_executable(dso_live src/main.cpp ${SOURCE_FILES})
 target_link_libraries(dso_live ${DSO_LIBRARY} ${OpenCV_LIBS})
-rosbuild_link_boost(dso_live thread)
+rosbuild_link_boost(dso_live thread system)
