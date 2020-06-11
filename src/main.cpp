@@ -229,7 +229,7 @@ int main( int argc, char** argv )
     	fullSystem->setGammaFunction(undistorter->photometricUndist->getG());
 
     ros::NodeHandle nh;
-    ros::Subscriber imgSub = nh.subscribe("image", 1, &vidCb);
+    ros::Subscriber imgSub = nh.subscribe("/ws2/foot_front/undistorted/image_raw", 1, &vidCb);
 
     ros::spin();
     fullSystem->printResult(saveFile);
