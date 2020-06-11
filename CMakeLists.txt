@@ -19,9 +19,9 @@ set(DSO_PATH $ENV{DSO_PATH})
 message("\n\n---- LOOKING FOR DSO at\n\"${DSO_PATH}\"")
 
 
-find_package(Pangolin 0.2 REQUIRED)
-message("\n\n---- FOUND Pangolin Headers at\n\"${Pangolin_INCLUDE_DIRS}\"")
-message("---- FOUND Pangolin Libs at\n\"${Pangolin_LIBRARIES}\"")
+# find_package(Pangolin 0.2 REQUIRED)
+# message("\n\n---- FOUND Pangolin Headers at\n\"${Pangolin_INCLUDE_DIRS}\"")
+# message("---- FOUND Pangolin Libs at\n\"${Pangolin_LIBRARIES}\"")
 
 find_package(OpenCV REQUIRED)
 message("\n\n---- FOUND OpenCV Headers at\n\"${OpenCV_INCLUDE_DIRS}\"")
@@ -46,11 +46,10 @@ include_directories(
   ${DSO_PATH}/src
   ${DSO_PATH}/thirdparty/Sophus
   ${OpenCV_INCLUDE_DIRS}
-  ${Pangolin_INCLUDE_DIRS}
+#  ${Pangolin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
 )  
 
 rosbuild_add_executable(dso_live src/main.cpp ${SOURCE_FILES})
-target_link_libraries(dso_live ${DSO_LIBRARY} ${Pangolin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(dso_live ${DSO_LIBRARY} ${OpenCV_LIBS})
 rosbuild_link_boost(dso_live thread)
-
