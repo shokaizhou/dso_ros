@@ -43,6 +43,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include "cv_bridge/cv_bridge.h"
 
 
@@ -144,6 +145,8 @@ FullSystem* fullSystem = 0;
 Undistort* undistorter = 0;
 int frameID = 0;
 
+ros::Publisher vision_vel_pub_;
+
 void vidCb(const sensor_msgs::ImageConstPtr img)
 {
 	cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
@@ -167,21 +170,21 @@ void vidCb(const sensor_msgs::ImageConstPtr img)
 	MinimalImageB minImg((int)cv_ptr->image.cols, (int)cv_ptr->image.rows,(unsigned char*)cv_ptr->image.data);
 	ImageAndExposure* undistImg = undistorter->undistort<unsigned char>(&minImg, 1,0, 1.0f);
 	undistImg->timestamp=img->header.stamp.toSec(); // relay the timestamp to dso
-	fullSystem->addActiveFrame(undistImg, frameID);
+	SE3 cam_to_world = fullSystem->addActiveFrame(undistImg, frameID);
+	static Eigen::Vector3f last_translation = cam_to_world.translation().cast<float>();
+	float vel = (cam_to_world.translation().cast<float>() - last_translation).norm() / 0.025;
+	last_translation = cam_to_world.translation().cast<float>();
+	geometry_msgs::Vector3Stamped vec;
+	vec.header = img->header;
+	vec.vector.x = vel;
+	vision_vel_pub_.publish(vec);
 	frameID++;
 	delete undistImg;
-
 }
-
-
-
-
 
 int main( int argc, char** argv )
 {
 	ros::init(argc, argv, "dso_live");
-
-
 
 	for(int i=1; i<argc;i++) parseArgument(argv[i]);
 
@@ -230,6 +233,8 @@ int main( int argc, char** argv )
 
     ros::NodeHandle nh;
     ros::Subscriber imgSub = nh.subscribe("/ws2/foot_front/undistorted/image_raw", 1, &vidCb);
+
+	vision_vel_pub_ = nh.advertise<geometry_msgs::Vector3Stamped>("/vision/vel", 10, true);
 
     ros::spin();
     fullSystem->printResult(saveFile);
